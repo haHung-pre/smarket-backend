@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S Market Admin — Hà Hùng</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary:    #e53935;
+      --primary-dk: #b71c1c;
+      --dark:       #1a1a2e;
+      --dark2:      #16213e;
+      --mid:        #0f3460;
+      --sidebar-w:  240px;
+      --accent:     #ff6f00;
+      --green:      #43a047;
+      --border:     #e0e0e0;
+      --bg:         #f5f5f5;
+      --white:      #ffffff;
+      --text:       #333333;
+      --text-light: #777777;
+      --shadow:     0 2px 12px rgba(0,0,0,.10);
+      --radius:     8px;
+      --font:       'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: var(--font); }
+
+    /* ====== LOGIN SCREEN ====== */
+    #loginScreen {
+      position: fixed; inset: 0; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: var(--white); border-radius: 16px; padding: 40px;
+      width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .login-logo {
+      text-align: center; margin-bottom: 28px;
+    }
+    .login-logo h1 { font-size: 26px; font-weight: 800; color: var(--primary); }
+    .login-logo p  { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 13px; font-family: var(--font);
+      outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+    }
+    .form-group textarea { resize: vertical; height: 80px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+           border-radius: 8px; font-size: 13px; font-weight: 700; border: none;
+           transition: all .2s; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-success:hover { opacity: .9; }
+    .btn-danger  { background: #ef5350; color: #fff; }
+    .btn-danger:hover { opacity: .9; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-full { width: 100%; justify-content: center; }
+    #loginError { color: var(--primary); font-size: 12px; text-align: center; margin-top: 10px; display: none; }
+
+    /* ====== LAYOUT ====== */
+    #appShell { display: none; min-height: 100vh; }
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--dark2); display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 20px 18px; border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-logo .logo-icon {
+      width: 36px; height: 36px; background: var(--primary);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; font-weight: 800;
+    }
+    .sidebar-logo h2 { font-size: 16px; font-weight: 800; color: #fff; }
+    .sidebar-logo p  { font-size: 11px; color: rgba(255,255,255,.5); }
+    .sidebar-nav { flex: 1; padding: 16px 10px; }
+    .nav-section-title {
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,.35);
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 12px 10px 6px;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; margin-bottom: 2px;
+      color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600;
+      transition: all .2s; cursor: pointer; border: none; width: 100%;
+      background: transparent; text-align: left;
+    }
+    .nav-link i { width: 16px; text-align: center; font-size: 14px; }
+    .nav-link:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .nav-link.active { background: var(--primary); color: #fff; }
+    .sidebar-user {
+      padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: 13px; font-weight: 700;
+    }
+    .user-info { flex: 1; }
+    .user-info .uname { font-size: 13px; font-weight: 700; color: #fff; }
+    .user-info .urole { font-size: 11px; color: rgba(255,255,255,.5); }
+    .logout-btn { color: rgba(255,255,255,.5); font-size: 16px; padding: 4px; cursor: pointer; transition: color .2s; }
+    .logout-btn:hover { color: var(--primary); }
+
+    /* Main content */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      padding: 24px;
+      min-height: 100vh;
+    }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title { font-size: 22px; font-weight: 800; color: var(--dark); }
+    .page-subtitle { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+    /* Stats cards */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow);
+      border-left: 4px solid var(--primary);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .stat-info .stat-value { font-size: 24px; font-weight: 800; color: var(--dark); }
+    .stat-info .stat-label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+    .stat-card:nth-child(1) { border-color: var(--primary); }
+    .stat-card:nth-child(1) .stat-icon { background: rgba(229,57,53,.12); color: var(--primary); }
+    .stat-card:nth-child(2) { border-color: #1976d2; }
+    .stat-card:nth-child(2) .stat-icon { background: rgba(25,118,210,.12); color: #1976d2; }
+    .stat-card:nth-child(3) { border-color: var(--green); }
+    .stat-card:nth-child(3) .stat-icon { background: rgba(67,160,71,.12); color: var(--green); }
+    .stat-card:nth-child(4) { border-color: var(--accent); }
+    .stat-card:nth-child(4) .stat-icon { background: rgba(255,111,0,.12); color: var(--accent); }
+
+    /* Tables */
+    .card {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 16px; font-weight: 800; color: var(--dark); }
+    .card-body { padding: 0; }
+    .search-filter {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .search-filter input, .search-filter select {
+      padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-family: var(--font); outline: none;
+      transition: border-color .2s;
+    }
+    .search-filter input:focus, .search-filter select:focus { border-color: var(--primary); }
+    .search-filter input { flex: 1; min-width: 180px; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 12px 16px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--text-light);
+      background: #fafafa; border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      font-size: 13px; vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fafafa; }
+    .product-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; }
+    .badge {
+      display: inline-block; padding: 3px 8px; border-radius: 50px;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-new    { background: rgba(67,160,71,.15);  color: #2e7d32; }
+    .badge-hot    { background: rgba(255,111,0,.15);  color: #e65100; }
+    .badge-sale   { background: rgba(229,57,53,.15);  color: var(--primary); }
+    .badge-active { background: rgba(67,160,71,.15);  color: #2e7d32; }
+    .badge-new-msg{ background: rgba(25,118,210,.15); color: #1565c0; }
+    .badge-read   { background: rgba(0,0,0,.07);      color: #666; }
+    .actions { display: flex; gap: 6px; }
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text-light); font-size: 14px;
+    }
+    .empty-state i { font-size: 48px; opacity: .3; display: block; margin-bottom: 12px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 500; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 12px;
+      padding: 28px; width: 540px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 18px; font-weight: 800; color: var(--dark); }
+    .modal-close { font-size: 20px; color: var(--text-light); cursor: pointer; transition: color .2s; }
+    .modal-close:hover { color: var(--primary); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Toast */
+    #toasts {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 9000; display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      background: var(--dark); color: #fff;
+      padding: 12px 18px; border-radius: 8px; font-size: 13px;
+      display: flex; align-items: center; gap: 8px;
+      animation: slideIn .3s ease; min-width: 240px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error   { border-left: 3px solid var(--primary); }
+    @keyframes slideIn {
+      from { transform: translateX(110%); opacity: 0; }
+      to   { transform: translateX(0);   opacity: 1; }
+    }
+
+    /* Pages */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { text-align: center; padding: 40px; color: var(--text-light); }
+
+    @media(max-width:768px){
+      .sidebar { transform: translateX(-100%); transition: transform .3s; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 16px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ====== LOGIN SCREEN ====== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>S Market</h1>
+      <p>Trang quản trị — Hà Hùng</p>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="admin@smarket.vn" value="admin@smarket.vn">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" value="">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">
+      <i class="fas fa-sign-in-alt"></i> Đăng nhập
+    </button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ====== APP SHELL ====== -->
+<div id="appShell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <h2>S Market</h2>
+        <p>Admin Panel</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng quan</div>
+      <button class="nav-link active" onclick="showPage('dashboard')">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </button>
+      <div class="nav-section-title">Quản lý</div>
+      <button class="nav-link" onclick="showPage('products')">
+        <i class="fas fa-box"></i> Sản phẩm
+      </button>
+      <button class="nav-link" onclick="showPage('contacts')">
+        <i class="fas fa-envelope"></i> Tin nhắn
+        <span id="newMsgBadge" style="margin-left:auto;background:var(--primary);color:#fff;font-size:10px;padding:2px 6px;border-radius:50px;display:none;"></span>
+      </button>
+      <div class="nav-section-title">Công cụ</div>
+      <button class="nav-link" onclick="showPage('apitest')">
+        <i class="fas fa-vial"></i> Test API
+      </button>
+      <button class="nav-link" onclick="window.open('/api/health','_blank')">
+        <i class="fas fa-heartbeat"></i> Health Check
+      </button>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">H</div>
+      <div class="user-info">
+        <div class="uname" id="userName">Hà Hùng</div>
+        <div class="urole">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Đăng xuất">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Chào mừng trở lại, <span id="greetName">Hà Hùng</span>!</div>
+        </div>
+        <button class="btn btn-primary" onclick="loadDashboard()">
+          <i class="fas fa-sync"></i> Làm mới
+        </button>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-box"></i></div><div class="stat-info"><div class="stat-value" id="statProducts">…</div><div class="stat-label">Tổng sản phẩm</div></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-envelope"></i></div><div class="stat-info"><div class="stat-value" id="statMessages">…</div><div class="stat-label">Tin nhắn mới</div></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-fire"></i></div><div class="stat-info"><div class="stat-value" id="statFeatured">…</div><div class="stat-label">Sản phẩm nổi bật</div></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-tags"></i></div><div class="stat-info"><div class="stat-value">6</div><div class="stat-label">Danh mục</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Sản phẩm gần đây</div><button class="btn btn-outline btn-sm" onclick="showPage('products')">Xem tất cả</button></div>
+        <div id="dashProductsTable"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="pg-products">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Quản lý Sản phẩm</div>
+          <div class="page-subtitle">Thêm, sửa, xóa sản phẩm</div>
+        </div>
+        <button class="btn btn-primary" onclick="openProductModal()">
+          <i class="fas fa-plus"></i> Thêm sản phẩm
+        </button>
+      </div>
+      <div class="card">
+        <div class="search-filter">
+          <input type="text" id="productSearch" placeholder="🔍 Tìm kiếm sản phẩm..." oninput="filterProducts()">
+          <select id="productCatFilter" onchange="filterProducts()">
+            <option value="">Tất cả danh mục</option>
+            <option>cáp sạc</option><option>tai nghe</option><option>máy tính</option>
+            <option>bàn phím</option><option>điện thoại</option><option>chuột</option><option>khác</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadProducts()"><i class="fas fa-sync"></i></button>
+        </div>
+        <div id="productsTable"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="page" id="pg-contacts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Tin nhắn liên hệ</div>
+          <div class="page-subtitle">Tin nhắn từ khách hàng</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadContacts()"><i class="fas fa-sync"></i> Làm mới</button>
+      </div>
+      <div class="card">
+        <div class="search-filter">
+          <select id="contactStatusFilter" onchange="loadContacts()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="new">Mới</option>
+            <option value="read">Đã đọc</option>
+            <option value="replied">Đã trả lời</option>
+          </select>
+        </div>
+        <div id="contactsTable"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- API TEST -->
+    <div class="page" id="pg-apitest">
+      <div class="page-header">
+        <div><div class="page-title">Test API</div><div class="page-subtitle">Kiểm tra các endpoint</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">API Endpoints</div></div>
+        <div style="padding:20px;display:grid;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">GET</span>
+            <code style="flex:1;font-size:13px;">/api/products</code>
+            <button class="btn btn-outline btn-sm" onclick="testApi('/api/products')">Test</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">GET</span>
+            <code style="flex:1;font-size:13px;">/api/products?category=chuột&limit=5</code>
+            <button class="btn btn-outline btn-sm" onclick="testApi('/api/products?category=chu%E1%BB%99t&limit=5')">Test</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">GET</span>
+            <code style="flex:1;font-size:13px;">/api/health</code>
+            <button class="btn btn-outline btn-sm" onclick="testApi('/api/health')">Test</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">AUTH</span>
+            <code style="flex:1;font-size:13px;">/api/auth/me</code>
+            <button class="btn btn-outline btn-sm" onclick="testApi('/api/auth/me',true)">Test (auth)</button>
+          </div>
+        </div>
+        <div style="padding:0 20px 20px;">
+          <label style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;">Kết quả:</label>
+          <pre id="apiTestResult" style="background:#1a1a2e;color:#a5d6a7;padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;max-height:300px;min-height:60px;">// Nhấn Test để xem kết quả</pre>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="productModalTitle">Thêm sản phẩm mới</div>
+      <button class="modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tên sản phẩm *</label>
+        <input type="text" id="pm-name" placeholder="Tên sản phẩm">
+      </div>
+      <div class="form-group">
+        <label>Danh mục *</label>
+        <select id="pm-category">
+          <option value="">Chọn danh mục</option>
+          <option>cáp sạc</option><option>tai nghe</option><option>máy tính</option>
+          <option>bàn phím</option><option>điện thoại</option><option>chuột</option><option>khác</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Giá (VNĐ) *</label>
+        <input type="number" id="pm-price" placeholder="250000">
+      </div>
+      <div class="form-group">
+        <label>Giá gốc (VNĐ)</label>
+        <input type="number" id="pm-oldPrice" placeholder="300000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Badge</label>
+        <select id="pm-badge">
+          <option value="">Không có</option>
+          <option>Mới</option><option>Hot</option><option>Sale</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tồn kho</label>
+        <input type="number" id="pm-stock" placeholder="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>URL ảnh sản phẩm</label>
+      <input type="url" id="pm-image" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label>URL bài đăng Blogger</label>
+      <input type="url" id="pm-bloggerUrl" placeholder="https://httpsmarket.blogspot.com/...">
+    </div>
+    <div class="form-group">
+      <label>Mô tả</label>
+      <textarea id="pm-description" placeholder="Mô tả sản phẩm..."></textarea>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="pm-featured" style="width:auto;">
+      <label for="pm-featured" style="margin:0;">Sản phẩm nổi bật</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeProductModal()">Hủy</button>
+      <button class="btn btn-primary" id="productSaveBtn" onclick="saveProduct()">
+        <i class="fas fa-save"></i> Lưu sản phẩm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Chi tiết tin nhắn</div>
+      <button class="modal-close" onclick="closeContactModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="contactDetail"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeContactModal()">Đóng</button>
+      <button class="btn btn-success" id="markRepliedBtn" onclick="markReplied()">
+        <i class="fas fa-check"></i> Đã trả lời
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toasts"></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API = window.location.origin; // same origin
+let token = localStorage.getItem('admin_token') || '';
+let editProductId = null;
+let currentContactId = null;
+let allProducts = [];
+
+// ============================================================
+// AUTH
+// ============================================================
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass  = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  try {
+    const res  = await fetch(`${API}/api/auth/login`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Đăng nhập thất bại');
+
+    token = data.token;
+    localStorage.setItem('admin_token', token);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display    = 'flex';
+    document.getElementById('userName').textContent  = data.user.name;
+    document.getElementById('greetName').textContent = data.user.name;
+    document.getElementById('userAvatar').textContent = data.user.name.charAt(0);
+    initApp();
+  } catch (err) {
+    errEl.textContent    = err.message;
+    errEl.style.display  = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('admin_token');
+  token = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display    = 'none';
+}
+
+// Auto-login if token exists
+async function checkAutoLogin() {
+  if (!token) return;
+  try {
+    const res  = await fetch(`${API}/api/auth/me`, { headers: authHeader() });
+    const data = await res.json();
+    if (!res.ok) throw new Error();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display    = 'flex';
+    document.getElementById('userName').textContent  = data.user.name;
+    document.getElementById('greetName').textContent = data.user.name;
+    document.getElementById('userAvatar').textContent = data.user.name.charAt(0);
+    initApp();
+  } catch {
+    localStorage.removeItem('admin_token');
+    token = '';
+  }
+}
+
+function authHeader() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(`pg-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.textContent.toLowerCase().includes(name === 'dashboard' ? 'dashboard' :
+        name === 'products' ? 'sản phẩm' : name === 'contacts' ? 'tin nhắn' : 'test api')) {
+      l.classList.add('active');
+    }
+  });
+  if (name === 'products') loadProducts();
+  if (name === 'contacts') loadContacts();
+  if (name === 'dashboard') loadDashboard();
+}
+
+function initApp() {
+  loadDashboard();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  try {
+    const [pRes, cRes] = await Promise.all([
+      fetch(`${API}/api/products?limit=1`, { headers: authHeader() }),
+      fetch(`${API}/api/contact?status=new`, { headers: authHeader() }),
+    ]);
+    const pd = await pRes.json();
+    const cd = await cRes.json();
+
+    document.getElementById('statProducts').textContent = pd.pagination?.total ?? '—';
+    document.getElementById('statMessages').textContent = cd.pagination?.total ?? '—';
+
+    const newCount = cd.pagination?.total || 0;
+    const badge = document.getElementById('newMsgBadge');
+    if (newCount > 0) { badge.textContent = newCount; badge.style.display = 'inline'; }
+
+    // Featured
+    const fRes  = await fetch(`${API}/api/products?featured=true&limit=1`, { headers: authHeader() });
+    const fd    = await fRes.json();
+    document.getElementById('statFeatured').textContent = fd.pagination?.total ?? '—';
+
+    // Recent products table
+    const rRes  = await fetch(`${API}/api/products?limit=5&sort=-createdAt`, { headers: authHeader() });
+    const rd    = await rRes.json();
+    renderDashProductsTable(rd.products || []);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderDashProductsTable(products) {
+  const el = document.getElementById('dashProductsTable');
+  if (!products.length) { el.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i>Chưa có sản phẩm</div>'; return; }
+  el.innerHTML = `<table><thead><tr>
+    <th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Badge</th>
+  </tr></thead><tbody>${products.map(p => `<tr>
+    <td><div style="display:flex;align-items:center;gap:10px;">
+      <img class="product-thumb" src="${p.image || 'https://via.placeholder.com/44'}" alt="">
+      <span style="font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+    </div></td>
+    <td>${p.category}</td>
+    <td style="font-weight:700;color:var(--primary);">${fmtPrice(p.price)}</td>
+    <td>${p.stock}</td>
+    <td>${p.badge ? `<span class="badge badge-${p.badge.toLowerCase()}">${p.badge}</span>` : '—'}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+// ============================================================
+// PRODUCTS
+// ============================================================
+async function loadProducts() {
+  document.getElementById('productsTable').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const res  = await fetch(`${API}/api/products?limit=100&sort=-createdAt`, { headers: authHeader() });
+    const data = await res.json();
+    allProducts = data.products || [];
+    renderProductsTable(allProducts);
+  } catch (err) {
+    toast('Lỗi tải sản phẩm: ' + err.message, 'error');
+  }
+}
+
+function filterProducts() {
+  const q   = document.getElementById('productSearch').value.toLowerCase();
+  const cat = document.getElementById('productCatFilter').value;
+  const filtered = allProducts.filter(p =>
+    (!q   || p.name.toLowerCase().includes(q)) &&
+    (!cat || p.category === cat)
+  );
+  renderProductsTable(filtered);
+}
+
+function renderProductsTable(products) {
+  const el = document.getElementById('productsTable');
+  if (!products.length) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i>Không có sản phẩm nào</div>';
+    return;
+  }
+  el.innerHTML = `<table><thead><tr>
+    <th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Kho</th><th>Badge</th><th>Nổi bật</th><th>Thao tác</th>
+  </tr></thead><tbody>${products.map(p => `<tr>
+    <td><div style="display:flex;align-items:center;gap:10px;">
+      <img class="product-thumb" src="${p.image || 'https://via.placeholder.com/44'}" alt="">
+      <div>
+        <div style="font-weight:700;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+        <div style="font-size:11px;color:#999;">${p._id}</div>
+      </div>
+    </div></td>
+    <td>${p.category}</td>
+    <td style="font-weight:700;color:var(--primary);">${fmtPrice(p.price)}</td>
+    <td>${p.stock}</td>
+    <td>${p.badge ? `<span class="badge badge-${p.badge.toLowerCase()}">${p.badge}</span>` : '—'}</td>
+    <td>${p.featured ? '<i class="fas fa-star" style="color:#ffc107;"></i>' : '<i class="far fa-star" style="color:#ccc;"></i>'}</td>
+    <td><div class="actions">
+      <button class="btn btn-outline btn-sm" onclick="openProductModal('${p._id}')"><i class="fas fa-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}','${p.name.replace(/'/g, '')}')"><i class="fas fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function openProductModal(id = null) {
+  editProductId = id;
+  document.getElementById('productModalTitle').textContent = id ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới';
+
+  // Clear form
+  ['name','category','price','oldPrice','badge','stock','image','bloggerUrl','description'].forEach(f => {
+    const el = document.getElementById(`pm-${f}`);
+    if (el) el.value = '';
+  });
+  document.getElementById('pm-featured').checked = false;
+
+  if (id) {
+    const p = allProducts.find(x => x._id === id);
+    if (p) {
+      document.getElementById('pm-name').value        = p.name || '';
+      document.getElementById('pm-category').value    = p.category || '';
+      document.getElementById('pm-price').value       = p.price || '';
+      document.getElementById('pm-oldPrice').value    = p.oldPrice || '';
+      document.getElementById('pm-badge').value       = p.badge || '';
+      document.getElementById('pm-stock').value       = p.stock || '';
+      document.getElementById('pm-image').value       = p.image || '';
+      document.getElementById('pm-bloggerUrl').value  = p.bloggerPostUrl || '';
+      document.getElementById('pm-description').value = p.description || '';
+      document.getElementById('pm-featured').checked  = p.featured || false;
+    }
+  }
+  document.getElementById('productModal').classList.add('open');
+}
+
+function closeProductModal() {
+  document.getElementById('productModal').classList.remove('open');
+  editProductId = null;
+}
+
+async function saveProduct() {
+  const btn = document.getElementById('productSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+  const payload = {
+    name:           document.getElementById('pm-name').value.trim(),
+    category:       document.getElementById('pm-category').value,
+    price:          Number(document.getElementById('pm-price').value),
+    oldPrice:       Number(document.getElementById('pm-oldPrice').value) || null,
+    badge:          document.getElementById('pm-badge').value || null,
+    stock:          Number(document.getElementById('pm-stock').value) || 0,
+    image:          document.getElementById('pm-image').value.trim(),
+    bloggerPostUrl: document.getElementById('pm-bloggerUrl').value.trim(),
+    description:    document.getElementById('pm-description').value.trim(),
+    featured:       document.getElementById('pm-featured').checked,
+  };
+
+  if (!payload.name || !payload.category || !payload.price) {
+    toast('Vui lòng điền đầy đủ thông tin bắt buộc.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Lưu sản phẩm';
+    return;
+  }
+
+  try {
+    const url    = editProductId ? `${API}/api/products/${editProductId}` : `${API}/api/products`;
+    const method = editProductId ? 'PUT' : 'POST';
+    const res    = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(payload) });
+    const data   = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    toast(editProductId ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm thành công!', 'success');
+    closeProductModal();
+    loadProducts();
+    loadDashboard();
+  } catch (err) {
+    toast('Lỗi: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Lưu sản phẩm';
+  }
+}
+
+async function deleteProduct(id, name) {
+  if (!confirm(`Xóa sản phẩm "${name}"?\nSản phẩm sẽ bị ẩn (soft delete).`)) return;
+  try {
+    const res = await fetch(`${API}/api/products/${id}`, { method: 'DELETE', headers: authHeader() });
+    const d   = await res.json();
+    if (!res.ok) throw new Error(d.message);
+    toast('Đã xóa sản phẩm.', 'success');
+    loadProducts();
+    loadDashboard();
+  } catch (err) {
+    toast('Lỗi xóa: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// CONTACTS
+// ============================================================
+async function loadContacts() {
+  document.getElementById('contactsTable').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const status = document.getElementById('contactStatusFilter').value;
+  try {
+    const res  = await fetch(`${API}/api/contact${status ? `?status=${status}` : ''}`, { headers: authHeader() });
+    const data = await res.json();
+    renderContactsTable(data.contacts || []);
+  } catch (err) {
+    toast('Lỗi tải tin nhắn: ' + err.message, 'error');
+  }
+}
+
+function renderContactsTable(contacts) {
+  const el = document.getElementById('contactsTable');
+  if (!contacts.length) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-envelope"></i>Chưa có tin nhắn</div>';
+    return;
+  }
+  el.innerHTML = `<table><thead><tr>
+    <th>Người gửi</th><th>Email</th><th>Điện thoại</th><th>Trạng thái</th><th>Thời gian</th><th>Thao tác</th>
+  </tr></thead><tbody>${contacts.map(c => `<tr>
+    <td style="font-weight:700;">${c.name}</td>
+    <td>${c.email}</td>
+    <td>${c.phone || '—'}</td>
+    <td><span class="badge badge-${c.status === 'new' ? 'new-msg' : 'read'}">${c.status}</span></td>
+    <td style="font-size:12px;color:#999;">${new Date(c.createdAt).toLocaleString('vi-VN')}</td>
+    <td><div class="actions">
+      <button class="btn btn-outline btn-sm" onclick="openContactDetail('${c._id}')"><i class="fas fa-eye"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteContact('${c._id}')"><i class="fas fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+async function openContactDetail(id) {
+  currentContactId = id;
+  try {
+    const res  = await fetch(`${API}/api/contact/${id}`, { headers: authHeader() });
+    const data = await res.json();
+    const c    = data.contact;
+    document.getElementById('contactDetail').innerHTML = `
+      <div style="display:grid;gap:12px;">
+        <div><strong>Họ tên:</strong> ${c.name}</div>
+        <div><strong>Email:</strong> <a href="mailto:${c.email}">${c.email}</a></div>
+        <div><strong>Điện thoại:</strong> ${c.phone || 'Không có'}</div>
+        <div><strong>Thời gian:</strong> ${new Date(c.createdAt).toLocaleString('vi-VN')}</div>
+        <div><strong>IP:</strong> ${c.ip || '—'}</div>
+        <div style="background:#f5f5f5;padding:14px;border-radius:8px;margin-top:4px;">
+          <strong>Nội dung:</strong><br><br>${c.message.replace(/\n/g, '<br>')}
+        </div>
+        <div><strong>Trạng thái:</strong> <span class="badge badge-${c.status === 'new' ? 'new-msg' : 'read'}">${c.status}</span></div>
+      </div>
+    `;
+    document.getElementById('contactModal').classList.add('open');
+    loadContacts();
+  } catch (err) {
+    toast('Lỗi: ' + err.message, 'error');
+  }
+}
+
+function closeContactModal() {
+  document.getElementById('contactModal').classList.remove('open');
+  currentContactId = null;
+}
+
+async function markReplied() {
+  if (!currentContactId) return;
+  try {
+    await fetch(`${API}/api/contact/${currentContactId}/status`, {
+      method:  'PATCH',
+      headers: authHeader(),
+      body:    JSON.stringify({ status: 'replied' }),
+    });
+    toast('Đã đánh dấu là đã trả lời.', 'success');
+    closeContactModal();
+    loadContacts();
+  } catch (err) {
+    toast('Lỗi: ' + err.message, 'error');
+  }
+}
+
+async function deleteContact(id) {
+  if (!confirm('Xóa tin nhắn này?')) return;
+  try {
+    await fetch(`${API}/api/contact/${id}`, { method: 'DELETE', headers: authHeader() });
+    toast('Đã xóa tin nhắn.', 'success');
+    loadContacts();
+  } catch (err) {
+    toast('Lỗi: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+// API TEST
+// ============================================================
+async function testApi(endpoint, withAuth = false) {
+  const el = document.getElementById('apiTestResult');
+  el.textContent = 'Đang tải...';
+  try {
+    const res  = await fetch(`${API}${endpoint}`, withAuth ? { headers: authHeader() } : {});
+    const data = await res.json();
+    el.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = 'Lỗi: ' + err.message;
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtPrice(n) {
+  return n ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n) : '—';
+}
+
+function toast(msg, type = 'success') {
+  const tc = document.getElementById('toasts');
+  const t  = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>${msg}`;
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// Enter key on login
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Init
+checkAutoLogin();
+</script>
+</body>
+</html>
