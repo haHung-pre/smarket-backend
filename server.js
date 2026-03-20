@@ -137,19 +137,18 @@ app.listen(PORT, () => {
 async function seedAdminUser() {
   try {
     const User = require('./models/User');
-    const count = await User.countDocuments({ role: 'admin' });
-    if (count === 0) {
-      await User.create({
-        name:     process.env.ADMIN_NAME     || 'Hà Hùng',
-        email:    process.env.ADMIN_EMAIL    || 'admin@smarket.vn',
-        password: process.env.ADMIN_PASSWORD || 'Admin@123456',
-        role:     'admin',
-      });
-      console.log('👤  Default admin created:');
-      console.log(`    Email   : ${process.env.ADMIN_EMAIL    || 'admin@smarket.vn'}`);
-      console.log(`    Password: ${process.env.ADMIN_PASSWORD || 'Admin@123456'}`);
-      console.log('    ⚠️  Please change this password immediately!');
-    }
+    const email    = process.env.ADMIN_EMAIL    || 'admin@smarket.vn';
+    const password = process.env.ADMIN_PASSWORD || 'Admin@123456';
+    const name     = process.env.ADMIN_NAME     || 'Hà Hùng';
+
+    // Always delete and recreate admin to ensure password is in sync
+    await User.deleteMany({ role: 'admin' });
+    await User.create({ name, email, password, role: 'admin' });
+
+    console.log('👤  Admin account ready:');
+    console.log(`    Email   : ${email}`);
+    console.log(`    Password: ${password}`);
+    console.log('    ✅  Login at /admin');
   } catch (err) {
     console.error('Seed error:', err.message);
   }
